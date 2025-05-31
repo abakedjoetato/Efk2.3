@@ -7,6 +7,7 @@ import discord
 from datetime import datetime, timezone
 from pathlib import Path
 import logging
+import random
 from typing import Dict, Any, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -189,7 +190,6 @@ class EmbedFactory:
     @staticmethod
     async def build_connection_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build connection embed with themed messaging"""
-        import random
         try:
             # Use random themed titles and descriptions
             title = embed_data.get('title', random.choice(EmbedFactory.CONNECTION_TITLES))
@@ -225,7 +225,6 @@ class EmbedFactory:
     @staticmethod
     async def build_mission_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build mission embed with difficulty indicators"""
-        import random
         try:
             mission_id = embed_data.get('mission_id', '')
             state = embed_data.get('state', 'UNKNOWN')
@@ -281,7 +280,6 @@ class EmbedFactory:
     @staticmethod
     async def build_airdrop_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build airdrop embed"""
-        import random
         try:
             title = random.choice(EmbedFactory.AIRDROP_TITLES)
             embed = discord.Embed(
@@ -311,7 +309,6 @@ class EmbedFactory:
     @staticmethod
     async def build_helicrash_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build helicrash embed"""
-        import random
         try:
             title = random.choice(EmbedFactory.HELICRASH_TITLES)
             embed = discord.Embed(
@@ -342,17 +339,18 @@ class EmbedFactory:
     async def build_trader_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build trader embed"""
         try:
+            title = random.choice(EmbedFactory.TRADER_TITLES)
             embed = discord.Embed(
-                title="🏪 Trader Arrival",
-                description="Traveling merchant has arrived with rare goods",
+                title=title,
+                description="Underground supply network has established contact in your sector",
                 color=EmbedFactory.COLORS['trader'],
                 timestamp=datetime.now(timezone.utc)
             )
 
             location = embed_data.get('location', 'Unknown Location')
-            embed.add_field(name="📍 Location", value=location, inline=True)
-            embed.add_field(name="⏰ Status", value="Open for Business", inline=True)
-            embed.add_field(name="💎 Inventory", value="Rare Items Available", inline=True)
+            embed.add_field(name="Contact Location", value=location, inline=True)
+            embed.add_field(name="Network Status", value="Active", inline=True)
+            embed.add_field(name="Available Assets", value="Combat Equipment & Resources", inline=True)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 
@@ -514,14 +512,15 @@ class EmbedFactory:
 
         except Exception as e:
             logger.error(f"Critical error building error embed: {e}")
-            # Fallback embed without file
+            # Fallback embed with default file
             embed = discord.Embed(
-                title="❌ Critical Error",
+                title="Critical Error",
                 description="Multiple errors occurred",
                 color=0xFF0000,
                 timestamp=datetime.now(timezone.utc)
             )
-            return embed, None
+            fallback_file = discord.File("./assets/main.png", filename="main.png")
+            return embed, fallback_file
 
     @staticmethod
     def create_mission_embed(title: str, description: str, mission_id: str, level: int, state: str, respawn_time: int = None) -> discord.Embed:

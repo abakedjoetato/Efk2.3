@@ -717,7 +717,7 @@ class UnifiedLogParser:
             }
 
             embed, file = await EmbedFactory.build('mission', embed_data)
-                    return embed
+            return embed
 
         except Exception as e:
             logger.error(f"Failed to create mission embed: {e}")

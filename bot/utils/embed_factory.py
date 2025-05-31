@@ -20,8 +20,9 @@ class EmbedFactory:
 
     # Color scheme for different embed types
     COLORS = {
-        'killfeed': 0xFF4444,  # Red for kills
-        'suicide': 0xFFAA00,   # Orange for suicides
+        'killfeed': 0xFFFF00,  # Yellow for kills
+        'suicide': 0xFF0000,   # Red for suicides
+        'falling': 0x8B00FF,   # Purple for falling
         'connection': 0x00AA55, # Green for connections
         'mission': 0x5555FF,   # Blue for missions
         'airdrop': 0xFFAA55,   # Yellow for airdrops
@@ -40,7 +41,12 @@ class EmbedFactory:
         "Extraction Protocol Initiated", 
         "New Operative Deployment",
         "Squad Member Arrival",
-        "Contact Established"
+        "Contact Established",
+        "Survivor Integration Protocol",
+        "Field Asset Mobilization",
+        "Wasteland Conscription Active",
+        "Combat Personnel Enlisted",
+        "Ghost Protocol Activated"
     ]
 
     CONNECTION_DESCRIPTIONS = [
@@ -48,7 +54,12 @@ class EmbedFactory:
         "Fresh blood joins the wasteland conflict",
         "Another survivor steps into the chaos",
         "The war machine gains another operator",
-        "A warrior emerges from the shadows"
+        "A warrior emerges from the shadows",
+        "Hope arrives wrapped in kevlar and desperation",
+        "The endless grind claims another soul",
+        "Flesh meets metal in the machine of war",
+        "Another name added to tomorrow's casualty list",
+        "The hunger for conflict finds new meat"
     ]
 
     MISSION_READY_TITLES = [
@@ -56,7 +67,12 @@ class EmbedFactory:
         "Mission Parameters Active", 
         "Target Zone Established",
         "Operation Clearance Granted",
-        "Tactical Opportunity Available"
+        "Tactical Opportunity Available",
+        "Blood Contract Initiated",
+        "Death Warrant Authorized",
+        "Slaughter Protocol Engaged",
+        "Carnage Clearance Obtained",
+        "Extinction Event Scheduled"
     ]
 
     MISSION_READY_DESCRIPTIONS = [
@@ -64,7 +80,12 @@ class EmbedFactory:
         "The battlefield offers new challenges to conquer", 
         "Strategic assets require immediate attention",
         "Critical missions demand experienced soldiers",
-        "Valuable targets have been identified for extraction"
+        "Valuable targets have been identified for extraction",
+        "Fresh graves need digging in contested territory",
+        "The meat grinder requires premium feeding",
+        "Death calls for volunteers with steady hands",
+        "Violence waits patiently for willing participants",
+        "Glory and gore intermingle in equal measure"
     ]
 
     MISSION_ACTIVE_TITLES = [
@@ -72,7 +93,12 @@ class EmbedFactory:
         "Combat Engagement Active",
         "Tactical Mission Underway", 
         "Objective Under Assault",
-        "Strike Team Deployed"
+        "Strike Team Deployed",
+        "Hellfire Protocol Executing",
+        "Apocalypse Engine Running",
+        "Bloodbath Initiative Active",
+        "Scorched Earth Operations",
+        "Devastation Protocols Engaged"
     ]
 
     MISSION_COMPLETE_TITLES = [
@@ -80,7 +106,12 @@ class EmbedFactory:
         "Objective Secured",
         "Target Neutralized",
         "Operation Successful", 
-        "Victory Achieved"
+        "Victory Achieved",
+        "Carnage Quota Fulfilled",
+        "Death Toll Satisfied",
+        "Scoreboard Updated",
+        "Body Count Verified",
+        "Blood Debt Collected"
     ]
 
     AIRDROP_TITLES = [
@@ -88,7 +119,12 @@ class EmbedFactory:
         "High-Value Cargo Incoming",
         "Emergency Resupply Detected",
         "Strategic Assets En Route",
-        "Critical Supplies Deployed"
+        "Critical Supplies Deployed",
+        "Salvation from the Skies",
+        "Angel of Death Delivery",
+        "Last Hope Package",
+        "Divine Intervention Dropping",
+        "Mercy Cargo Inbound"
     ]
 
     HELICRASH_TITLES = [
@@ -96,7 +132,12 @@ class EmbedFactory:
         "Helicopter Wreckage Located", 
         "Crash Site Identified",
         "Downed Aircraft Detected",
-        "Emergency Landing Confirmed"
+        "Emergency Landing Confirmed",
+        "Metal Bird Falls Silent",
+        "Sky Chariot Broken",
+        "Iron Angel Grounded",
+        "Flying Coffin Confirmed",
+        "Mechanical Vulture Downed"
     ]
 
     TRADER_TITLES = [
@@ -104,16 +145,40 @@ class EmbedFactory:
         "Arms Dealer Sighted",
         "Supply Contact Available",
         "Underground Merchant",
-        "Resource Broker Active"
+        "Resource Broker Active",
+        "Death Merchant Arrived",
+        "Scavenger Lord Present",
+        "Wasteland Capitalist",
+        "Profiteer of Chaos",
+        "Blood Money Banker"
     ]
 
-    # Killfeed themed messages
+    # Killfeed themed messages - expanded to 10
     KILL_TITLES = [
         "Combat Engagement Complete",
         "Target Eliminated",
         "Hostile Neutralized",
         "Enemy Operator Down",
-        "Combat Victory Confirmed"
+        "Combat Victory Confirmed",
+        "Life Debt Collected",
+        "Final Transaction Processed",
+        "Mortality Reminder Delivered",
+        "Pulse Check Failed",
+        "Breathing Privileges Revoked"
+    ]
+
+    # Kill random messages for variety
+    KILL_MESSAGES = [
+        "Another heartbeat silenced beneath the ash sky.",
+        "No burial, no name — just silence where a soul once stood.",
+        "Left no echo. Just scattered gear and cooling blood.",
+        "Cut from the world like thread from a fraying coat.",
+        "Hunger, cold, bullets — it could've been any of them. It was enough.",
+        "Marked, hunted, forgotten. In that order.",
+        "Their fire went out before they even knew they were burning.",
+        "A last breath swallowed by wind and war.",
+        "The price of survival paid in someone else's blood.",
+        "The map didn't change. The player did."
     ]
 
     SUICIDE_TITLES = [
@@ -121,7 +186,54 @@ class EmbedFactory:
         "Operator Down",
         "Fatal Incident",
         "Combat Loss",
-        "KIA Confirmed"
+        "KIA Confirmed",
+        "Self-Termination Executed",
+        "Internal Error Fatal",
+        "Friendly Fire Confirmed",
+        "System Malfunction Critical",
+        "User Input Error"
+    ]
+
+    # Menu suicide random messages
+    SUICIDE_MESSAGES = [
+        "Hit \"relocate\" like it was the snooze button. Got deleted.",
+        "Tactical redeployment... into the abyss.",
+        "Rage respawned and logic respawned with it.",
+        "Wanted a reset. Got a reboot straight to the void.",
+        "Pressed something. Paid everything.",
+        "Who needs enemies when you've got bad decisions?",
+        "Alt+F4'd themselves into Valhalla.",
+        "Strategic death — poorly executed.",
+        "Fast travel without a destination.",
+        "Confirmed: the dead menu is not a safe zone."
+    ]
+
+    # Falling death titles
+    FALLING_TITLES = [
+        "Gravity Enforcement",
+        "Altitude Adjustment Fatal",
+        "Terminal Velocity Achieved",
+        "Ground Impact Confirmed",
+        "Elevation Error Corrected",
+        "Physics Lesson Concluded",
+        "Descent Protocol Failed",
+        "Vertical Miscalculation",
+        "Flight Plan Terminated",
+        "Landing Coordinates Incorrect"
+    ]
+
+    # Falling random messages
+    FALLING_MESSAGES = [
+        "Thought they could make it. The ground disagreed.",
+        "Airborne ambition. Terminal results.",
+        "Tried flying. Landed poorly.",
+        "Gravity called. They answered — headfirst.",
+        "Believed in themselves. Gravity didn't.",
+        "From rooftops to regret in under two seconds.",
+        "The sky opened. The floor closed.",
+        "Survival instincts took a coffee break.",
+        "Feet first into a bad decision.",
+        "Their plan had one fatal step too many."
     ]
 
     SUICIDE_DESCRIPTIONS = [
@@ -138,7 +250,12 @@ class EmbedFactory:
         "Resource Exchange Successful",
         "Asset Transfer Confirmed",
         "Economic Operation Complete",
-        "Financial Transaction Processed"
+        "Financial Transaction Processed",
+        "Wealth Redistribution Active",
+        "Capital Flow Authorized",
+        "Investment Return Confirmed",
+        "Profit Margin Secured",
+        "Economic Victory Achieved"
     ]
 
     ECONOMY_ERROR_TITLES = [
@@ -146,7 +263,12 @@ class EmbedFactory:
         "Insufficient Resources",
         "Operation Denied",
         "Access Restricted",
-        "Authorization Required"
+        "Authorization Required",
+        "Economic Sanctions Applied",
+        "Market Crash Detected",
+        "Poverty Protocols Engaged",
+        "Financial Quarantine Active",
+        "Credit Score Obliterated"
     ]
 
     # Leaderboard themed messages
@@ -155,7 +277,12 @@ class EmbedFactory:
         "Tactical Performance Analysis",
         "Operator Efficiency Report",
         "Battle Statistics Summary",
-        "Combat Performance Index"
+        "Combat Performance Index",
+        "Death Dealer Standings",
+        "Survival Hierarchy Report",
+        "Wasteland Who's Who",
+        "Elite Eliminator Rankings",
+        "Apex Predator Census"
     ]
 
     # Stats themed messages
@@ -164,7 +291,12 @@ class EmbedFactory:
         "Combat Record Analysis",
         "Performance Metrics",
         "Tactical Assessment",
-        "Service Record"
+        "Service Record",
+        "Psychological Evaluation",
+        "Lethality Documentation",
+        "Survivor Case Study",
+        "Combat Efficiency Audit",
+        "Battlefield Biography"
     ]
 
     # Bounty themed messages
@@ -173,7 +305,12 @@ class EmbedFactory:
         "Bounty Contract Active",
         "Elimination Order",
         "Target Acquisition",
-        "Priority Elimination"
+        "Priority Elimination",
+        "Death Warrant Issued",
+        "Assassination Contract",
+        "Termination Authorization",
+        "Execution Order Confirmed",
+        "Hunter's Mark Applied"
     ]
 
     # Mission mappings for readable names
@@ -442,13 +579,27 @@ class EmbedFactory:
             distance = embed_data.get('distance', 0)
 
             if is_suicide:
-                # Suicide embed with tactical styling
+                # Determine if it's falling or menu suicide and use appropriate styling
                 player_name = embed_data.get('player_name') or embed_data.get('victim', 'Unknown Player')
-                title = random.choice(EmbedFactory.SUICIDE_TITLES)
+                
+                if weapon.lower() == 'falling':
+                    # Falling death with purple color and falling titles/messages
+                    title = random.choice(EmbedFactory.FALLING_TITLES)
+                    color = EmbedFactory.COLORS['falling']
+                    themed_description = random.choice(EmbedFactory.FALLING_MESSAGES)
+                    asset_file = discord.File("./assets/Falling.png", filename="Falling.png")
+                    thumbnail_url = "attachment://Falling.png"
+                else:
+                    # Menu suicide with red color and suicide titles/messages
+                    title = random.choice(EmbedFactory.SUICIDE_TITLES)
+                    color = EmbedFactory.COLORS['suicide']
+                    themed_description = random.choice(EmbedFactory.SUICIDE_MESSAGES)
+                    asset_file = discord.File("./assets/Suicide.png", filename="Suicide.png")
+                    thumbnail_url = "attachment://Suicide.png"
 
                 embed = discord.Embed(
                     title=title,
-                    color=EmbedFactory.COLORS['suicide'],
+                    color=color,
                     timestamp=datetime.now(timezone.utc)
                 )
 
@@ -457,19 +608,12 @@ class EmbedFactory:
                 embed.add_field(name="Status", value="KIA - Non-Combat", inline=True)
 
                 # Add themed description at bottom (full-width)
-                themed_description = random.choice(EmbedFactory.SUICIDE_DESCRIPTIONS)
                 embed.add_field(name="Mission Report", value=themed_description, inline=False)
 
-                # Use appropriate asset based on cause
-                if weapon.lower() == 'falling':
-                    asset_file = discord.File("./assets/Falling.png", filename="Falling.png")
-                    embed.set_thumbnail(url="attachment://Falling.png")
-                else:
-                    asset_file = discord.File("./assets/Suicide.png", filename="Suicide.png")
-                    embed.set_thumbnail(url="attachment://Suicide.png")
+                embed.set_thumbnail(url=thumbnail_url)
 
             else:
-                # PvP kill embed with tactical styling
+                # PvP kill embed with yellow color and random kill messages
                 killer = embed_data.get('killer', 'Unknown')
                 victim = embed_data.get('victim', 'Unknown')
                 killer_kdr = embed_data.get('killer_kdr', '0.00')
@@ -478,7 +622,7 @@ class EmbedFactory:
 
                 embed = discord.Embed(
                     title=title,
-                    color=EmbedFactory.COLORS['killfeed'],
+                    color=EmbedFactory.COLORS['killfeed'],  # Now yellow
                     timestamp=datetime.now(timezone.utc)
                 )
 
@@ -489,9 +633,9 @@ class EmbedFactory:
                 if distance > 0:
                     embed.add_field(name="Engagement Range", value=f"{distance:.1f}m", inline=True)
 
-                # Add themed description at bottom (full-width)
-                kill_description = f"**{killer}** successfully eliminated **{victim}** in combat"
-                embed.add_field(name="Combat Report", value=kill_description, inline=False)
+                # Add random kill message at bottom (full-width)
+                kill_message = random.choice(EmbedFactory.KILL_MESSAGES)
+                embed.add_field(name="Combat Report", value=kill_message, inline=False)
 
                 asset_file = discord.File("./assets/Killfeed.png", filename="Killfeed.png")
                 embed.set_thumbnail(url="attachment://Killfeed.png")

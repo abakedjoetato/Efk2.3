@@ -76,8 +76,8 @@ class UnifiedLogParser:
             ),
 
             # Server configuration patterns
-            'max_player_count': re.compile(r'MaxPlayerCount=(\d+)', re.IGNORECASE),
-            'server_name_pattern': re.compile(r'ServerName=([^,\s]+)', re.IGNORECASE),
+            'max_player_count': re.compile(r'MaxPlayerCount\s*=\s*(\d+)', re.IGNORECASE),
+            'server_name_pattern': re.compile(r'ServerName\s*=\s*([^,\s]+)', re.IGNORECASE),
 
             # Mission patterns
             'mission_respawn': re.compile(r'LogSFPS: Mission (GA_[A-Za-z0-9_]+) will respawn in (\d+)', re.IGNORECASE),
@@ -355,21 +355,18 @@ class UnifiedLogParser:
         extracted_max_players = None
         extracted_server_name = None
 
-        # Extract server configuration during cold start
-        if cold_start:
-            for line in lines:
-                # Extract MaxPlayerCount
-                max_player_match = self.patterns['max_player_count'].search(line)
-                if max_player_match:
-                    try:
-                        extracted_max_players = int(max_player_match.group(1))
-                        logger.info(f"📊 Extracted MaxPlayerCount: {extracted_max_players} for server {server_id}")
-                    except ValueError:
-                        pass
-
-            # Store extracted server info in database during cold start
-            if extracted_max_players or extracted_server_name:
-                await self._update_server_info(guild_id, server_id, extracted_max_players)
+        # Extract server configuration during both cold start and hot start
+        for line in lines_to_process:
+            # Extract MaxPlayerCount
+            max_player_match = self.patterns['max_player_count'].search(line)
+            if max_player_match:
+                try:
+                    extracted_max_players = int(max_player_match.group(1))
+                    logger.info(f"📊 Extracted MaxPlayerCount: {extracted_max_players} for server {server_id}")
+                    # Store immediately when found
+                    await self._update_server_info(guild_id, server_id, extracted_max_players)
+                except ValueError:
+                    pass
 
         # First pass: collect all player events with timestamps for sequential processing
         player_event_dedup = {}  # Track events per player to prevent duplicates
@@ -540,7 +537,7 @@ class UnifiedLogParser:
                             'server_name': server_name
                         }
 
-                        final_embed, file_attachment = await EmbedFactory.build('connection', embed_data)
+                        final_embed, file_attachment = await EmbedFactory.build_connection_embed(embed_data)
                         embeds.append(final_embed)
 
                 elif event['type'] == 'disconnect':
@@ -584,7 +581,7 @@ class UnifiedLogParser:
                                 'server_name': server_name
                             }
 
-                            final_embed, file_attachment = await EmbedFactory.build('connection', embed_data)
+                            final_embed, file_attachment = await EmbedFactory.build_connection_embed(embed_data)
                             embeds.append(final_embed)
                     else:
                         logger.debug(f"Skipping disconnect for {player_id} - player was not joined")
@@ -831,12 +828,12 @@ class UnifiedLogParser:
                 # Try to get MaxPlayerCount from database first, then fallback to config
                 try:
                     stored_max_players = await self._get_server_max_players(guild_id_int, str(primary_server.get('_id', '')))
-                    if stored_max_players:
+                    if stored_max_players and stored_max_players > 0:
                         max_players = stored_max_players
                         logger.debug(f"Using database MaxPlayerCount: {max_players}")
                     else:
                         max_players = primary_server.get('max_players', 60)
-                        logger.debug(f"Using config max_players: {max_players}")
+                        logger.debug(f"Using config max_players: {max_players} (no database value found)")
                 except Exception as e:
                     logger.warning(f"Failed to get stored max players: {e}")
                     max_players = primary_server.get('max_players', 60)
@@ -1025,66 +1022,38 @@ class UnifiedLogParser:
                 channel = self.bot.get_channel(channel_id)
                 if channel:
                     try:
-                        # Extract embed data and rebuild with EmbedFactory
+                        # Send embeds directly without rebuilding to preserve data
                         if embed_type == 'connection':
-                            # Extract connection data from embed fields
-                            embed_data = {
-                                'title': embed.title,
-                                'description': embed.description,
-                                'player_name': 'Unknown Player',
-                                'platform': 'Unknown',
-                                'server_name': 'Unknown Server'
-                            }
-                            
-                            # Extract data from embed fields
-                            for field in embed.fields:
-                                if field.name.lower() == 'player':
-                                    embed_data['player_name'] = field.value
-                                elif field.name.lower() == 'platform':
-                                    embed_data['platform'] = field.value
-                                elif field.name.lower() == 'server':
-                                    embed_data['server_name'] = field.value
-                            
-                            # Use EmbedFactory to build with themed messaging
-                            final_embed, file_attachment = await EmbedFactory.build_connection_embed(embed_data)
+                            # The embed already has the correct data, just send it with proper file
+                            connections_file = discord.File("./assets/Connections.png", filename="Connections.png")
+                            embed.set_thumbnail(url="attachment://Connections.png")
+                            final_embed = embed
+                            file_attachment = connections_file
                             
                         elif embed_type == 'mission':
-                            # Extract mission data
-                            embed_data = {
-                                'title': embed.title,
-                                'description': embed.description,
-                                'mission_id': '',
-                                'level': 1,
-                                'state': 'UNKNOWN'
-                            }
-
-                            for field in embed.fields:
-                                if field.name.lower() == 'mission':
-                                    embed_data['mission_id'] = field.value
-                                elif 'level' in field.name.lower():
-                                    try:
-                                        level_str = field.value.replace('Level ', '')
-                                        embed_data['level'] = int(level_str)
-                                    except:
-                                        embed_data['level'] = 1
-                                elif field.name.lower() == 'status':
-                                    embed_data['state'] = field.value.upper()
-
-                            final_embed, file_attachment = await EmbedFactory.build_mission_embed(embed_data)
+                            # The mission embed already has correct data, just add thumbnail
+                            mission_file = discord.File("./assets/Mission.png", filename="Mission.png")
+                            embed.set_thumbnail(url="attachment://Mission.png")
+                            final_embed = embed
+                            file_attachment = mission_file
                             
                         else:
-                            # For other embed types, use existing build method
-                            embed_data = {
-                                'title': embed.title,
-                                'description': embed.description,
-                                'location': 'Unknown'
-                            }
-
-                            for field in embed.fields:
-                                if field.name.lower() in ['location', 'crash site']:
-                                    embed_data['location'] = field.value
-
-                            final_embed, file_attachment = await EmbedFactory.build(embed_type, embed_data)
+                            # For other embed types, send directly with appropriate thumbnail
+                            if embed_type == 'airdrop':
+                                asset_file = discord.File("./assets/Airdrop.png", filename="Airdrop.png")
+                                embed.set_thumbnail(url="attachment://Airdrop.png")
+                            elif embed_type == 'helicrash':
+                                asset_file = discord.File("./assets/Helicrash.png", filename="Helicrash.png")
+                                embed.set_thumbnail(url="attachment://Helicrash.png")
+                            elif embed_type == 'trader':
+                                asset_file = discord.File("./assets/Trader.png", filename="Trader.png")
+                                embed.set_thumbnail(url="attachment://Trader.png")
+                            else:
+                                asset_file = discord.File("./assets/main.png", filename="main.png")
+                                embed.set_thumbnail(url="attachment://main.png")
+                            
+                            final_embed = embed
+                            file_attachment = asset_file
 
                         # Set priority for rate limiter
                         from bot.utils.advanced_rate_limiter import MessagePriority

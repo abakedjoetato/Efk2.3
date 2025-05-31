@@ -75,7 +75,7 @@ class UnifiedLogParser:
             ),
 
             # Server configuration patterns
-            'max_player_count': re.compile(r'MaxPlayerCount\s*=\s*(\d+)', re.IGNORECASE),
+            'max_player_count': re.compile(r'playersmaxcount\s*=\s*(\d+)', re.IGNORECASE),
             'server_name_pattern': re.compile(r'ServerName\s*=\s*([^,\s]+)', re.IGNORECASE),
 
             # Mission patterns
@@ -358,7 +358,7 @@ class UnifiedLogParser:
         self.server_info_patterns = {
             'start': re.compile(r'Server started\. Port: (\d+), QueryPort: (\d+)', re.IGNORECASE),
             'map': re.compile(r'Map: (.+)', re.IGNORECASE),
-            'max_players': re.compile(r'MaxPlayerCount:\s*(\d+)', re.IGNORECASE),
+            'max_players': re.compile(r'playersmaxcount:\s*(\d+)', re.IGNORECASE),
         }
 
         # Extract server configuration during both cold start and hot start
@@ -603,7 +603,7 @@ class UnifiedLogParser:
             try:
 
                 # Check for server info updates
-                if 'MaxPlayerCount:' in line:
+                if 'playersmaxcount:' in line:
                     match = self.server_info_patterns['max_players'].search(line)
                     if match:
                         max_players = int(match.group(1))

@@ -295,7 +295,7 @@ class Bounties(commands.Cog):
 
             if not bounties:
                 embed = discord.Embed(
-                    title="🎯 Active Bounties",
+                    title="Priority Elimination Contracts",
                     description="No active bounties found!",
                     color=0x808080,
                     timestamp=datetime.now(timezone.utc)
@@ -306,7 +306,7 @@ class Bounties(commands.Cog):
 
             # Create bounty list embed
             embed = discord.Embed(
-                title="🎯 Active Bounties",
+                title="Priority Elimination Contracts",
                 description=f"**{len(bounties)}** active bounties",
                 color=0xFF4500,
                 timestamp=datetime.now(timezone.utc)
@@ -325,14 +325,14 @@ class Bounties(commands.Cog):
                 )
 
             embed.add_field(
-                name="💰 Bounty List",
+                name="Active Contracts",
                 value="\n".join(bounty_list),
                 inline=False
             )
 
             if len(bounties) > 10:
                 embed.add_field(
-                    name="📊 Note",
+                    name="Status",
                     value=f"Showing top 10 of {len(bounties)} bounties",
                     inline=False
                 )
@@ -433,7 +433,7 @@ class Bounties(commands.Cog):
                 return
 
             embed = discord.Embed(
-                title="💰 Bounty Claimed!",
+                title="Contract Completed",
                 description=f"**{killer_character}** has claimed the bounty on **{bounty['target_character']}**!",
                 color=0x00FF00,
                 timestamp=datetime.now(timezone.utc)
@@ -446,13 +446,13 @@ class Bounties(commands.Cog):
             )
 
             embed.add_field(
-                name="🎯 Hunter",
+                name="Contractor",
                 value=f"<@{killer_discord_id}>",
                 inline=True
             )
 
             embed.add_field(
-                name="💀 Target",
+                name="Target Eliminated",
                 value=bounty['target_character'],
                 inline=True
             )

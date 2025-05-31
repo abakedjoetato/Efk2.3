@@ -107,6 +107,75 @@ class EmbedFactory:
         "Resource Broker Active"
     ]
 
+    # Killfeed themed messages
+    KILL_TITLES = [
+        "Combat Engagement Complete",
+        "Target Eliminated",
+        "Hostile Neutralized",
+        "Enemy Operator Down",
+        "Combat Victory Confirmed"
+    ]
+
+    SUICIDE_TITLES = [
+        "Casualty Report",
+        "Operator Down",
+        "Fatal Incident",
+        "Combat Loss",
+        "KIA Confirmed"
+    ]
+
+    SUICIDE_DESCRIPTIONS = [
+        "Operative eliminated by environmental hazards",
+        "Combat casualty due to tactical error",
+        "Field operative lost to hostile conditions",
+        "Soldier eliminated by battlefield hazards",
+        "Combat death from operational dangers"
+    ]
+
+    # Economy themed messages
+    ECONOMY_SUCCESS_TITLES = [
+        "Transaction Completed",
+        "Resource Exchange Successful",
+        "Asset Transfer Confirmed",
+        "Economic Operation Complete",
+        "Financial Transaction Processed"
+    ]
+
+    ECONOMY_ERROR_TITLES = [
+        "Transaction Failed",
+        "Insufficient Resources",
+        "Operation Denied",
+        "Access Restricted",
+        "Authorization Required"
+    ]
+
+    # Leaderboard themed messages
+    LEADERBOARD_TITLES = [
+        "Combat Effectiveness Rankings",
+        "Tactical Performance Analysis",
+        "Operator Efficiency Report",
+        "Battle Statistics Summary",
+        "Combat Performance Index"
+    ]
+
+    # Stats themed messages
+    STATS_TITLES = [
+        "Operator Profile",
+        "Combat Record Analysis",
+        "Performance Metrics",
+        "Tactical Assessment",
+        "Service Record"
+    ]
+
+    # Bounty themed messages
+    BOUNTY_TITLES = [
+        "High-Value Target",
+        "Bounty Contract Active",
+        "Elimination Order",
+        "Target Acquisition",
+        "Priority Elimination"
+    ]
+
     # Mission mappings for readable names
     MISSION_MAPPINGS = {
         'GA_Airport_mis_01_SFPSACMission': 'Airport Mission #1',
@@ -373,19 +442,21 @@ class EmbedFactory:
             distance = embed_data.get('distance', 0)
 
             if is_suicide:
-                # Suicide embed
+                # Suicide embed with tactical styling
                 player_name = embed_data.get('player_name') or embed_data.get('victim', 'Unknown Player')
+                title = random.choice(EmbedFactory.SUICIDE_TITLES)
+                description = random.choice(EmbedFactory.SUICIDE_DESCRIPTIONS)
 
                 embed = discord.Embed(
-                    title="💀 Fatal Incident",
-                    description=f"**{player_name}** met an unfortunate end",
+                    title=title,
+                    description=description,
                     color=EmbedFactory.COLORS['suicide'],
                     timestamp=datetime.now(timezone.utc)
                 )
 
-                embed.add_field(name="👤 Player", value=player_name, inline=True)
-                embed.add_field(name="⚰️ Cause", value=weapon, inline=True)
-                embed.add_field(name="📊 Type", value="Self-Elimination", inline=True)
+                embed.add_field(name="Operative", value=player_name, inline=True)
+                embed.add_field(name="Cause of Death", value=weapon, inline=True)
+                embed.add_field(name="Status", value="KIA - Non-Combat", inline=True)
 
                 # Use appropriate asset based on cause
                 if weapon.lower() == 'falling':
@@ -396,25 +467,26 @@ class EmbedFactory:
                     embed.set_thumbnail(url="attachment://Suicide.png")
 
             else:
-                # PvP kill embed
+                # PvP kill embed with tactical styling
                 killer = embed_data.get('killer', 'Unknown')
                 victim = embed_data.get('victim', 'Unknown')
                 killer_kdr = embed_data.get('killer_kdr', '0.00')
                 victim_kdr = embed_data.get('victim_kdr', '0.00')
+                title = random.choice(EmbedFactory.KILL_TITLES)
 
                 embed = discord.Embed(
-                    title="⚔️ Combat Engagement",
-                    description=f"**{killer}** eliminated **{victim}**",
+                    title=title,
+                    description=f"**{killer}** successfully eliminated **{victim}** in combat",
                     color=EmbedFactory.COLORS['killfeed'],
                     timestamp=datetime.now(timezone.utc)
                 )
 
-                embed.add_field(name="🗡️ Killer", value=f"{killer}\n`KDR: {killer_kdr}`", inline=True)
-                embed.add_field(name="💀 Victim", value=f"{victim}\n`KDR: {victim_kdr}`", inline=True)
-                embed.add_field(name="🔫 Weapon", value=weapon, inline=True)
+                embed.add_field(name="Victor", value=f"{killer}\nEfficiency: {killer_kdr}", inline=True)
+                embed.add_field(name="Eliminated", value=f"{victim}\nEfficiency: {victim_kdr}", inline=True)
+                embed.add_field(name="Weapon System", value=weapon, inline=True)
 
                 if distance > 0:
-                    embed.add_field(name="📏 Distance", value=f"{distance:.1f}m", inline=True)
+                    embed.add_field(name="Engagement Range", value=f"{distance:.1f}m", inline=True)
 
                 asset_file = discord.File("./assets/Killfeed.png", filename="Killfeed.png")
                 embed.set_thumbnail(url="attachment://Killfeed.png")
@@ -430,9 +502,12 @@ class EmbedFactory:
     async def build_leaderboard_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build leaderboard embed with themed messaging"""
         try:
+            title = embed_data.get('title', random.choice(EmbedFactory.LEADERBOARD_TITLES))
+            description = embed_data.get('description', 'Elite operators ranked by battlefield performance')
+            
             embed = discord.Embed(
-                title=embed_data.get('title', '🏆 Leaderboard'),
-                description=embed_data.get('description', 'Top players'),
+                title=title,
+                description=description,
                 color=EmbedFactory.COLORS['info'],
                 timestamp=datetime.now(timezone.utc)
             )
@@ -452,9 +527,12 @@ class EmbedFactory:
     async def build_stats_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build stats embed with themed messaging"""
         try:
+            title = embed_data.get('title', random.choice(EmbedFactory.STATS_TITLES))
+            description = embed_data.get('description', 'Comprehensive battlefield performance analysis')
+            
             embed = discord.Embed(
-                title=embed_data.get('title', '📊 Player Stats'),
-                description=embed_data.get('description', 'Player statistics'),
+                title=title,
+                description=description,
                 color=EmbedFactory.COLORS['info'],
                 timestamp=datetime.now(timezone.utc)
             )

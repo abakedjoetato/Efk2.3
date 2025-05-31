@@ -767,6 +767,5 @@ class Gambling(commands.Cog):
         except Exception as e:
             logger.error(f"Blackjack stand error: {e}")
 
-async def setup(bot):
-    """Setup function required for discord.py cog loading"""
-    await bot.add_cog(GamblingCog(bot))
+def setup(bot):
+    bot.add_cog(Gambling(bot))

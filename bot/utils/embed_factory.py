@@ -445,11 +445,9 @@ class EmbedFactory:
                 # Suicide embed with tactical styling
                 player_name = embed_data.get('player_name') or embed_data.get('victim', 'Unknown Player')
                 title = random.choice(EmbedFactory.SUICIDE_TITLES)
-                description = random.choice(EmbedFactory.SUICIDE_DESCRIPTIONS)
 
                 embed = discord.Embed(
                     title=title,
-                    description=description,
                     color=EmbedFactory.COLORS['suicide'],
                     timestamp=datetime.now(timezone.utc)
                 )
@@ -457,6 +455,10 @@ class EmbedFactory:
                 embed.add_field(name="Operative", value=player_name, inline=True)
                 embed.add_field(name="Cause of Death", value=weapon, inline=True)
                 embed.add_field(name="Status", value="KIA - Non-Combat", inline=True)
+
+                # Add themed description at bottom (full-width)
+                themed_description = random.choice(EmbedFactory.SUICIDE_DESCRIPTIONS)
+                embed.add_field(name="Mission Report", value=themed_description, inline=False)
 
                 # Use appropriate asset based on cause
                 if weapon.lower() == 'falling':
@@ -476,7 +478,6 @@ class EmbedFactory:
 
                 embed = discord.Embed(
                     title=title,
-                    description=f"**{killer}** successfully eliminated **{victim}** in combat",
                     color=EmbedFactory.COLORS['killfeed'],
                     timestamp=datetime.now(timezone.utc)
                 )
@@ -487,6 +488,10 @@ class EmbedFactory:
 
                 if distance > 0:
                     embed.add_field(name="Engagement Range", value=f"{distance:.1f}m", inline=True)
+
+                # Add themed description at bottom (full-width)
+                kill_description = f"**{killer}** successfully eliminated **{victim}** in combat"
+                embed.add_field(name="Combat Report", value=kill_description, inline=False)
 
                 asset_file = discord.File("./assets/Killfeed.png", filename="Killfeed.png")
                 embed.set_thumbnail(url="attachment://Killfeed.png")
@@ -525,10 +530,13 @@ class EmbedFactory:
 
     @staticmethod
     async def build_stats_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
-        """Build stats embed with themed messaging"""
+        """Build stats embed with themed messaging and real data"""
         try:
+            player_name = embed_data.get('player_name', 'Unknown Player')
+            server_name = embed_data.get('server_name', 'Unknown Server')
+            
             title = embed_data.get('title', random.choice(EmbedFactory.STATS_TITLES))
-            description = embed_data.get('description', 'Comprehensive battlefield performance analysis')
+            description = f"Comprehensive battlefield performance analysis for **{player_name}**"
             
             embed = discord.Embed(
                 title=title,
@@ -536,6 +544,27 @@ class EmbedFactory:
                 color=EmbedFactory.COLORS['info'],
                 timestamp=datetime.now(timezone.utc)
             )
+
+            # Add real statistics data
+            kills = embed_data.get('kills', 0)
+            deaths = embed_data.get('deaths', 0)
+            kdr = embed_data.get('kdr', '0.00')
+            
+            embed.add_field(name="🎯 Eliminations", value=f"{kills:,}", inline=True)
+            embed.add_field(name="💀 Deaths", value=f"{deaths:,}", inline=True)
+            embed.add_field(name="📊 K/D Ratio", value=str(kdr), inline=True)
+
+            # Additional stats
+            personal_best_distance = embed_data.get('personal_best_distance', 0.0)
+            favorite_weapon = embed_data.get('favorite_weapon', 'None')
+            
+            if personal_best_distance > 0:
+                embed.add_field(name="🎯 Best Shot", value=f"{personal_best_distance:.1f}m", inline=True)
+            
+            if favorite_weapon and favorite_weapon != 'None':
+                embed.add_field(name="⚔️ Preferred Weapon", value=favorite_weapon, inline=True)
+
+            embed.add_field(name="🌐 Server", value=server_name, inline=True)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 

@@ -63,7 +63,7 @@ class Stats(commands.Cog):
 
     async def get_player_combined_stats(self, guild_id: int, player_characters: List[str], server_id: str = None) -> Dict[str, Any]:
         """Get combined stats across all servers for a player's characters"""
-        # Initialize with safe defaults
+        # Initialize with safe defaults - ensure these are real values from database
         combined_stats = {
             'kills': 0,
             'deaths': 0,
@@ -78,6 +78,8 @@ class Stats(commands.Cog):
             'rival': None,
             'nemesis': None
         }
+
+        logger.debug(f"Getting combined stats for characters: {player_characters} in guild {guild_id}")
 
         try:
             if not player_characters:
@@ -103,17 +105,30 @@ class Stats(commands.Cog):
                             logger.warning(f"Invalid server_stats type: {type(server_stats)}")
                             continue
 
-                        combined_stats['kills'] += server_stats.get('kills', 0)
-                        combined_stats['deaths'] += server_stats.get('deaths', 0)
-                        combined_stats['suicides'] += server_stats.get('suicides', 0)
+                        # Debug log to track actual data retrieval
+                        logger.debug(f"Processing server stats for {character}: {server_stats}")
+
+                        kills = server_stats.get('kills', 0)
+                        deaths = server_stats.get('deaths', 0)
+                        suicides = server_stats.get('suicides', 0)
+                        
+                        combined_stats['kills'] += kills
+                        combined_stats['deaths'] += deaths
+                        combined_stats['suicides'] += suicides
+                        
                         # Track personal best distance (take the maximum across all servers)
-                        if server_stats.get('personal_best_distance', 0.0) > combined_stats['personal_best_distance']:
-                            combined_stats['personal_best_distance'] = server_stats.get('personal_best_distance', 0.0)
+                        pb_distance = server_stats.get('personal_best_distance', 0.0)
+                        if pb_distance > combined_stats['personal_best_distance']:
+                            combined_stats['personal_best_distance'] = pb_distance
+                        
                         combined_stats['servers_played'] += 1
 
                         # Track best streak
-                        if server_stats.get('best_streak', 0) > combined_stats['best_streak']:
-                            combined_stats['best_streak'] = server_stats.get('best_streak', 0)
+                        best_streak = server_stats.get('best_streak', 0)
+                        if best_streak > combined_stats['best_streak']:
+                            combined_stats['best_streak'] = best_streak
+
+                        logger.debug(f"Updated combined stats: kills={combined_stats['kills']}, deaths={combined_stats['deaths']}")
 
                 except Exception as char_error:
                     logger.error(f"Error processing character {character}: {char_error}")
@@ -341,12 +356,13 @@ class Stats(commands.Cog):
                 'deaths': total_deaths,
                 'kdr': total_kdr,
                 'personal_best_distance': stats.get('personal_best_distance', 0.0),
-                'total_distance': stats.get('total_distance', 0.0),
                 'favorite_weapon': stats.get('favorite_weapon'),
-                'faction': faction_name if 'faction_name' in locals() else None
+                'suicides': stats.get('suicides', 0),
+                'best_streak': stats.get('best_streak', 0),
+                'servers_played': stats.get('servers_played', 0)
             }
 
-            embed, file = await EmbedFactory.build('stats', embed_data)
+            embed, file = await EmbedFactory.build_stats_embed(embed_data)
 
             if file:
                 await ctx.followup.send(embed=embed, file=file)

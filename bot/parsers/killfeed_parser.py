@@ -391,16 +391,16 @@ class KillfeedParser:
                         'kdr': kills / max(deaths, 1) if deaths > 0 else float(kills)
                     }
 
-            # Prepare comprehensive embed data for themed killfeed factory
+            # Prepare comprehensive embed data for themed killfeed factory with validated data
             embed_data = {
                 'is_suicide': kill_data['is_suicide'],
-                'weapon': kill_data['weapon'],
-                'killer': kill_data.get('killer', ''),
-                'victim': kill_data.get('victim', ''),
-                'player_name': kill_data.get('victim', ''),  # For suicide events
-                'distance': kill_data.get('distance', 0),
-                'killer_kdr': f"{killer_stats.get('kdr', 0.0):.2f}" if killer_stats else "0.00",
-                'victim_kdr': f"{victim_stats.get('kdr', 0.0):.2f}" if victim_stats else "0.00"
+                'weapon': kill_data.get('weapon', 'Unknown'),
+                'killer': kill_data.get('killer', 'Unknown') if not kill_data['is_suicide'] else '',
+                'victim': kill_data.get('victim', 'Unknown'),
+                'player_name': kill_data.get('victim', 'Unknown'),  # For suicide events
+                'distance': max(0, kill_data.get('distance', 0)),  # Ensure non-negative
+                'killer_kdr': f"{killer_stats['kdr']:.2f}" if killer_stats and 'kdr' in killer_stats else "0.00",
+                'victim_kdr': f"{victim_stats['kdr']:.2f}" if victim_stats and 'kdr' in victim_stats else "0.00"
             }
 
             # Build themed embed using specialized killfeed factory

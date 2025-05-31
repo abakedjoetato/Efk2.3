@@ -60,6 +60,24 @@ class AutomatedLeaderboard(commands.Cog):
         """Wait for bot to be ready before starting task"""
         await self.bot.wait_until_ready()
 
+    async def get_top_kills(self, guild_id: int, limit: int = 10, server_id: str = None):
+        """Get top killers for automated leaderboard"""
+        try:
+            query = {
+                "guild_id": guild_id,
+                "kills": {"$gt": 0}
+            }
+
+            # Add server filter if specified
+            if server_id and server_id.strip():
+                query["server_id"] = server_id
+
+            cursor = self.bot.db_manager.pvp_data.find(query).sort("kills", -1).limit(limit)
+            return await cursor.to_list(length=None)
+        except Exception as e:
+            logger.error(f"Error getting top kills for automated leaderboard: {e}")
+            return []
+
     async def update_guild_leaderboard(self, guild_config: Dict[str, Any]):
         """Update leaderboard for a specific guild"""
         try:
@@ -142,9 +160,9 @@ class AutomatedLeaderboard(commands.Cog):
         try:
             # Get top players for each category using the same methods as leaderboards_fixed
             from bot.cogs.leaderboards_fixed import LeaderboardsFixed
-            
+
             leaderboard_cog = LeaderboardsFixed(self.bot)
-            
+
             # Create a consolidated leaderboard using EmbedFactory
             embed_data = {
                 'title': f"Blood Money Rankings - {server_name}",
@@ -157,7 +175,7 @@ class AutomatedLeaderboard(commands.Cog):
                 'server_name': server_name,
                 'thumbnail_url': 'attachment://Leaderboard.png'
             }
-            
+
             # Get actual data for consolidated leaderboard
             top_killers = await self.get_top_kills(guild_id, 3, server_id)
             top_kdr = await self.get_top_kdr(guild_id, 3, server_id)
@@ -165,7 +183,7 @@ class AutomatedLeaderboard(commands.Cog):
 
             # Build sections with real data
             sections = []
-            
+
             if top_killers:
                 killer_lines = []
                 for i, player in enumerate(top_killers, 1):
@@ -209,34 +227,16 @@ class AutomatedLeaderboard(commands.Cog):
             # Update totals with real data
             embed_data['total_kills'] = sum(p.get('kills', 0) for p in top_killers)
             embed_data['total_deaths'] = sum(p.get('deaths', 0) for p in top_killers)
-            
+
             # Use EmbedFactory to create the embed
             embed, file = await EmbedFactory.build('leaderboard', embed_data)
             return embed, file
 
-            
+
 
         except Exception as e:
             logger.error(f"Failed to create consolidated leaderboard: {e}")
             return None, None
-
-    async def get_top_kills(self, guild_id: int, limit: int, server_id: str = None) -> List[Dict[str, Any]]:
-        """Get top killers"""
-        try:
-            query = {
-                "guild_id": guild_id,
-                "kills": {"$gt": 0}
-            }
-            
-            # Add server filter if specified
-            if server_id:
-                query["server_id"] = server_id
-            
-            cursor = self.bot.db_manager.pvp_data.find(query).sort("kills", -1).limit(limit)
-            return await cursor.to_list(length=None)
-        except Exception as e:
-            logger.error(f"Failed to get top kills: {e}")
-            return []
 
     async def get_top_kdr(self, guild_id: int, limit: int, server_id: str = None) -> List[Dict[str, Any]]:
         """Get top KDR players"""
@@ -245,11 +245,11 @@ class AutomatedLeaderboard(commands.Cog):
                 "guild_id": guild_id,
                 "kills": {"$gte": 1}
             }
-            
+
             # Add server filter if specified
             if server_id:
                 query["server_id"] = server_id
-            
+
             cursor = self.bot.db_manager.pvp_data.find(query).limit(50)
             all_players = await cursor.to_list(length=None)
 
@@ -272,11 +272,11 @@ class AutomatedLeaderboard(commands.Cog):
                 "guild_id": guild_id,
                 "personal_best_distance": {"$gt": 0}
             }
-            
+
             # Add server filter if specified
             if server_id:
                 query["server_id"] = server_id
-            
+
             cursor = self.bot.db_manager.pvp_data.find(query).sort("personal_best_distance", -1).limit(limit)
             return await cursor.to_list(length=None)
         except Exception as e:
@@ -336,19 +336,19 @@ class AutomatedLeaderboard(commands.Cog):
                 "is_suicide": False,
                 "weapon": {"$nin": ["Menu Suicide", "Suicide", "Falling", "suicide_by_relocation"]}
             })
-            
+
             weapon_events = await cursor.to_list(length=None)
-            
+
             # Group weapons
             weapon_stats = {}
             for event in weapon_events:
                 weapon = event.get('weapon', 'Unknown')
                 killer = event.get('killer', 'Unknown')
-                
+
                 if weapon not in weapon_stats:
                     weapon_stats[weapon] = {'kills': 0, 'top_killer': killer}
                 weapon_stats[weapon]['kills'] += 1
-            
+
             # Sort and limit
             weapons_data = []
             for weapon, stats in sorted(weapon_stats.items(), key=lambda x: x[1]['kills'], reverse=True)[:limit]:
@@ -357,7 +357,7 @@ class AutomatedLeaderboard(commands.Cog):
                     'kills': stats['kills'],
                     'top_killer': stats['top_killer']
                 })
-            
+
             return weapons_data
         except Exception as e:
             logger.error(f"Failed to get top weapons: {e}")
@@ -368,40 +368,40 @@ class AutomatedLeaderboard(commands.Cog):
         try:
             factions_cursor = self.bot.db_manager.factions.find({"guild_id": guild_id})
             all_factions = await factions_cursor.to_list(length=None)
-            
+
             faction_stats = {}
-            
+
             for faction_doc in all_factions:
                 faction_name = faction_doc.get('faction_name')
                 faction_tag = faction_doc.get('faction_tag')
                 faction_display = faction_tag if faction_tag else faction_name
-                
+
                 if not faction_display:
                     continue
-                
+
                 faction_stats[faction_display] = {
                     'kills': 0, 
                     'deaths': 0, 
                     'members': set(),
                     'faction_name': faction_name
                 }
-                
+
                 # Get stats for each member
                 for discord_id in faction_doc.get('members', []):
                     player_link = await self.bot.db_manager.players.find_one({
                         "guild_id": guild_id,
                         "discord_id": discord_id
                     })
-                    
+
                     if not player_link:
                         continue
-                        
+
                     for character in player_link.get('linked_characters', []):
                         player_stat = await self.bot.db_manager.pvp_data.find_one({
                             "guild_id": guild_id,
                             "player_name": character
                         })
-                        
+
                         if player_stat:
                             faction_stats[faction_display]['kills'] += player_stat.get('kills', 0)
                             faction_stats[faction_display]['deaths'] += player_stat.get('deaths', 0)
@@ -413,7 +413,7 @@ class AutomatedLeaderboard(commands.Cog):
                 del faction_stats[faction_name]['members']
 
             sorted_factions = sorted(faction_stats.items(), key=lambda x: x[1]['kills'], reverse=True)[:limit]
-            
+
             return [{'faction_name': name, **stats} for name, stats in sorted_factions]
         except Exception as e:
             logger.error(f"Failed to get top faction: {e}")

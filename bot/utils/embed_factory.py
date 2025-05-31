@@ -505,7 +505,7 @@ class EmbedFactory:
 
     @staticmethod
     async def build_leaderboard_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
-        """Build leaderboard embed with themed messaging"""
+        """Build leaderboard embed with themed messaging and real data"""
         try:
             title = embed_data.get('title', random.choice(EmbedFactory.LEADERBOARD_TITLES))
             description = embed_data.get('description', 'Elite operators ranked by battlefield performance')
@@ -517,12 +517,44 @@ class EmbedFactory:
                 timestamp=datetime.now(timezone.utc)
             )
 
+            # Add real leaderboard rankings
+            rankings = embed_data.get('rankings', '')
+            if rankings:
+                embed.add_field(name="Rankings", value=rankings, inline=False)
+
+            # Add summary statistics if available
+            total_kills = embed_data.get('total_kills', 0)
+            total_deaths = embed_data.get('total_deaths', 0)
+            stat_type = embed_data.get('stat_type', 'general')
+
+            if total_kills > 0 or total_deaths > 0:
+                if stat_type == 'kills':
+                    embed.add_field(name="Total Eliminations", value=f"{total_kills:,}", inline=True)
+                elif stat_type == 'deaths':
+                    embed.add_field(name="Total Casualties", value=f"{total_deaths:,}", inline=True)
+                elif stat_type == 'kdr':
+                    total_kdr = total_kills / max(total_deaths, 1) if total_deaths > 0 else total_kills
+                    embed.add_field(name="Average Efficiency", value=f"{total_kdr:.2f}", inline=True)
+
+            # Add server context
+            server_name = embed_data.get('server_name', 'All Servers')
+            embed.add_field(name="Theater of Operations", value=server_name, inline=True)
+
+            # Get appropriate thumbnail based on leaderboard type
+            thumbnail_url = embed_data.get('thumbnail_url', 'attachment://Leaderboard.png')
+            
+            # Determine asset file based on thumbnail URL
+            if 'WeaponStats.png' in thumbnail_url:
+                asset_file = discord.File("./assets/WeaponStats.png", filename="WeaponStats.png")
+            elif 'Faction.png' in thumbnail_url:
+                asset_file = discord.File("./assets/Faction.png", filename="Faction.png")
+            else:
+                asset_file = discord.File("./assets/Leaderboard.png", filename="Leaderboard.png")
+            
+            embed.set_thumbnail(url=thumbnail_url)
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 
-            main_file = discord.File("./assets/Leaderboard.png", filename="Leaderboard.png")
-            embed.set_thumbnail(url="attachment://Leaderboard.png")
-
-            return embed, main_file
+            return embed, asset_file
 
         except Exception as e:
             logger.error(f"Error building leaderboard embed: {e}")
@@ -545,26 +577,44 @@ class EmbedFactory:
                 timestamp=datetime.now(timezone.utc)
             )
 
-            # Add real statistics data
+            # Add real statistics data with clean military styling
             kills = embed_data.get('kills', 0)
             deaths = embed_data.get('deaths', 0)
             kdr = embed_data.get('kdr', '0.00')
+            suicides = embed_data.get('suicides', 0)
+            best_streak = embed_data.get('best_streak', 0)
             
-            embed.add_field(name="🎯 Eliminations", value=f"{kills:,}", inline=True)
-            embed.add_field(name="💀 Deaths", value=f"{deaths:,}", inline=True)
-            embed.add_field(name="📊 K/D Ratio", value=str(kdr), inline=True)
+            embed.add_field(name="Eliminations", value=f"{kills:,}", inline=True)
+            embed.add_field(name="Deaths", value=f"{deaths:,}", inline=True)
+            embed.add_field(name="Efficiency Ratio", value=str(kdr), inline=True)
 
-            # Additional stats
+            # Additional combat metrics
             personal_best_distance = embed_data.get('personal_best_distance', 0.0)
             favorite_weapon = embed_data.get('favorite_weapon', 'None')
             
             if personal_best_distance > 0:
-                embed.add_field(name="🎯 Best Shot", value=f"{personal_best_distance:.1f}m", inline=True)
+                if personal_best_distance >= 1000:
+                    distance_str = f"{personal_best_distance/1000:.1f}km"
+                else:
+                    distance_str = f"{personal_best_distance:.1f}m"
+                embed.add_field(name="Longest Shot", value=distance_str, inline=True)
             
             if favorite_weapon and favorite_weapon != 'None':
-                embed.add_field(name="⚔️ Preferred Weapon", value=favorite_weapon, inline=True)
+                embed.add_field(name="Primary Weapon", value=favorite_weapon, inline=True)
 
-            embed.add_field(name="🌐 Server", value=server_name, inline=True)
+            if best_streak > 0:
+                embed.add_field(name="Best Streak", value=f"{best_streak:,}", inline=True)
+
+            # Server information
+            embed.add_field(name="Deployment Zone", value=server_name, inline=False)
+
+            # Add tactical summary at bottom
+            if kills > 0 or deaths > 0:
+                total_engagements = kills + deaths
+                survival_rate = (kills / total_engagements * 100) if total_engagements > 0 else 0
+                embed.add_field(name="Combat Summary", 
+                               value=f"**{total_engagements:,}** total engagements with **{survival_rate:.1f}%** victory rate", 
+                               inline=False)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 

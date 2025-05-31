@@ -424,6 +424,10 @@ class LeaderboardsFixed(commands.Cog):
                 'distance': 'attachment://Leaderboard.png'
             }
 
+            # Ensure we have real data, not empty placeholders
+            if not leaderboard_text:
+                return None, None
+
             # Use EmbedFactory for proper theming with dynamic styling
             embed_data = {
                 'title': title,

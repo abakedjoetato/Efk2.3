@@ -763,7 +763,6 @@ class EmbedFactory:
                     distance_str = f"{personal_best_distance:.0f}m"
                 embed.add_field(name="Longest Engagement", value=distance_str, inline=True)
 
-            ```python
             if favorite_weapon and favorite_weapon != 'None' and favorite_weapon.strip():
                 embed.add_field(name="Preferred Arsenal", value=favorite_weapon, inline=True)
 

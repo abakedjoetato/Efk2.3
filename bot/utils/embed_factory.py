@@ -567,7 +567,7 @@ class EmbedFactory:
             player_name = embed_data.get('player_name', 'Unknown Player')
             server_name = embed_data.get('server_name', 'Unknown Server')
             
-            title = embed_data.get('title', random.choice(EmbedFactory.STATS_TITLES))
+            title = random.choice(EmbedFactory.STATS_TITLES)
             description = f"Comprehensive battlefield performance analysis for **{player_name}**"
             
             embed = discord.Embed(
@@ -577,43 +577,66 @@ class EmbedFactory:
                 timestamp=datetime.now(timezone.utc)
             )
 
-            # Add real statistics data with clean military styling
-            kills = embed_data.get('kills', 0)
-            deaths = embed_data.get('deaths', 0)
-            kdr = embed_data.get('kdr', '0.00')
-            suicides = embed_data.get('suicides', 0)
-            best_streak = embed_data.get('best_streak', 0)
+            # Validate and use real statistics data with clean military styling
+            kills = max(0, embed_data.get('kills', 0))
+            deaths = max(0, embed_data.get('deaths', 0))
+            kdr_value = embed_data.get('kdr', '0.00')
+            
+            # Ensure KDR is properly formatted
+            try:
+                if isinstance(kdr_value, (int, float)):
+                    kdr = f"{float(kdr_value):.2f}"
+                else:
+                    kdr = str(kdr_value)
+            except:
+                kdr = "0.00"
             
             embed.add_field(name="Eliminations", value=f"{kills:,}", inline=True)
-            embed.add_field(name="Deaths", value=f"{deaths:,}", inline=True)
-            embed.add_field(name="Efficiency Ratio", value=str(kdr), inline=True)
+            embed.add_field(name="Casualties", value=f"{deaths:,}", inline=True)
+            embed.add_field(name="Combat Efficiency", value=kdr, inline=True)
 
-            # Additional combat metrics
-            personal_best_distance = embed_data.get('personal_best_distance', 0.0)
-            favorite_weapon = embed_data.get('favorite_weapon', 'None')
+            # Additional combat metrics with validation
+            personal_best_distance = float(embed_data.get('personal_best_distance', 0.0))
+            favorite_weapon = embed_data.get('favorite_weapon')
+            best_streak = max(0, embed_data.get('best_streak', 0))
+            suicides = max(0, embed_data.get('suicides', 0))
             
             if personal_best_distance > 0:
                 if personal_best_distance >= 1000:
                     distance_str = f"{personal_best_distance/1000:.1f}km"
                 else:
-                    distance_str = f"{personal_best_distance:.1f}m"
-                embed.add_field(name="Longest Shot", value=distance_str, inline=True)
+                    distance_str = f"{personal_best_distance:.0f}m"
+                embed.add_field(name="Longest Engagement", value=distance_str, inline=True)
             
-            if favorite_weapon and favorite_weapon != 'None':
-                embed.add_field(name="Primary Weapon", value=favorite_weapon, inline=True)
+            if favorite_weapon and favorite_weapon != 'None' and favorite_weapon.strip():
+                embed.add_field(name="Preferred Arsenal", value=favorite_weapon, inline=True)
 
             if best_streak > 0:
-                embed.add_field(name="Best Streak", value=f"{best_streak:,}", inline=True)
+                embed.add_field(name="Peak Performance", value=f"{best_streak:,} Streak", inline=True)
+
+            # Add additional metrics if available
+            if suicides > 0:
+                embed.add_field(name="Non-Combat Losses", value=f"{suicides:,}", inline=True)
 
             # Server information
-            embed.add_field(name="Deployment Zone", value=server_name, inline=False)
+            embed.add_field(name="Theater of Operations", value=server_name, inline=False)
 
-            # Add tactical summary at bottom
+            # Add tactical summary at bottom with enhanced messaging
             if kills > 0 or deaths > 0:
                 total_engagements = kills + deaths
                 survival_rate = (kills / total_engagements * 100) if total_engagements > 0 else 0
-                embed.add_field(name="Combat Summary", 
-                               value=f"**{total_engagements:,}** total engagements with **{survival_rate:.1f}%** victory rate", 
+                
+                if survival_rate >= 70:
+                    performance_rank = "Elite Operative"
+                elif survival_rate >= 50:
+                    performance_rank = "Veteran Soldier"
+                elif survival_rate >= 30:
+                    performance_rank = "Experienced Fighter"
+                else:
+                    performance_rank = "Active Combatant"
+                
+                embed.add_field(name="Tactical Assessment", 
+                               value=f"**{performance_rank}** • {total_engagements:,} total engagements • {survival_rate:.1f}% victory rate", 
                                inline=False)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")

@@ -1,4 +1,3 @@
-
 import asyncio
 import logging
 import os
@@ -318,19 +317,19 @@ class UnifiedLogParser:
             # Cold start: process all lines to rebuild accurate state
             lines_to_process = lines
             logger.info(f"🧊 Cold start: processing {len(lines)} lines to rebuild player state")
-            
+
             # Clear any existing sessions for this server during cold start
             server_session_keys = [k for k in self.player_sessions.keys() if k.startswith(f"{guild_id}_")]
             for session_key in server_session_keys:
                 session_data = self.player_sessions.get(session_key, {})
                 if session_data.get('server_id') == server_id:
                     del self.player_sessions[session_key]
-                    
+
             # Clear lifecycle data for this server
             server_lifecycle_keys = [k for k in self.player_lifecycle.keys() if k.startswith(f"{guild_id}_")]
             for lifecycle_key in server_lifecycle_keys:
                 del self.player_lifecycle[lifecycle_key]
-                
+
             logger.info(f"🧹 Cleared existing session state for cold start")
         else:
             # Hot start: process only new lines
@@ -355,6 +354,13 @@ class UnifiedLogParser:
         extracted_max_players = None
         extracted_server_name = None
 
+        # Server info patterns
+        self.server_info_patterns = {
+            'start': re.compile(r'Server started\. Port: (\d+), QueryPort: (\d+)', re.IGNORECASE),
+            'map': re.compile(r'Map: (.+)', re.IGNORECASE),
+            'max_players': re.compile(r'MaxPlayerCount:\s*(\d+)', re.IGNORECASE),
+        }
+
         # Extract server configuration during both cold start and hot start
         for line in lines_to_process:
             # Extract MaxPlayerCount
@@ -370,13 +376,13 @@ class UnifiedLogParser:
 
         # First pass: collect all player events with timestamps for sequential processing
         player_event_dedup = {}  # Track events per player to prevent duplicates
-        
+
         for line in lines_to_process:
             try:
                 # Extract timestamp from line for ordering
                 timestamp_match = self.patterns['timestamp'].search(line)
                 line_timestamp = timestamp_match.group(1) if timestamp_match else None
-                
+
                 # Parse timestamp for proper ordering
                 parsed_timestamp = None
                 if line_timestamp:
@@ -427,7 +433,7 @@ class UnifiedLogParser:
                 register_match = self.patterns['player_registered'].search(line)
                 if register_match:
                     player_id = register_match.group(1)
-                    
+
                     # Add join event
                     event_key = f"join_{player_id}"
                     if event_key not in player_event_dedup or parsed_timestamp > player_event_dedup[event_key]['timestamp']:
@@ -443,7 +449,7 @@ class UnifiedLogParser:
                 disconnect_match = self.patterns['player_disconnect'].search(line)
                 if disconnect_match:
                     player_id = disconnect_match.group(1)
-                    
+
                     # Add disconnect event
                     event_key = f"disconnect_{player_id}"
                     if event_key not in player_event_dedup or parsed_timestamp > player_event_dedup[event_key]['timestamp']:
@@ -464,19 +470,19 @@ class UnifiedLogParser:
             except Exception as e:
                 logger.error(f"Unexpected error collecting player events from line: {e}")
                 continue
-                
+
         # Convert deduplicated events to sorted list by timestamp
         player_events = sorted(player_event_dedup.values(), key=lambda x: x['timestamp'])
 
         # Process events in strict chronological order with proper state management
         logger.info(f"🔄 Processing {len(player_events)} player events in chronological order")
-        
+
         for event in player_events:
             try:
                 player_id = event['player_id']
                 lifecycle_key = f"{guild_id}_{player_id}"
                 session_key = f"{guild_id}_{player_id}"
-                
+
                 if event['type'] == 'queue':
                     # Update lifecycle with queue information
                     self.player_lifecycle[lifecycle_key] = {
@@ -486,7 +492,7 @@ class UnifiedLogParser:
                         'queued_at': event['timestamp'].isoformat()
                     }
                     logger.debug(f"👤 Player queued: {player_id} -> '{event['player_name']}' on {event['platform']}")
-                    
+
                 elif event['type'] == 'join':
                     # Get player data from lifecycle (if available from queue event)
                     lifecycle_data = self.player_lifecycle.get(lifecycle_key, {})
@@ -544,11 +550,11 @@ class UnifiedLogParser:
                     # Only process disconnect if player was previously joined
                     lifecycle_data = self.player_lifecycle.get(lifecycle_key, {})
                     session_data = self.player_sessions.get(session_key, {})
-                    
+
                     # Check if player was actually online before processing disconnect
                     if (lifecycle_data.get('state') == 'joined' or 
                         session_data.get('status') == 'online'):
-                        
+
                         player_name = lifecycle_data.get('name') or session_data.get('player_name', f"Player{player_id[:8].upper()}")
                         platform = lifecycle_data.get('platform') or session_data.get('platform', 'Unknown')
 
@@ -592,9 +598,24 @@ class UnifiedLogParser:
 
         # Second pass: process non-player events with deduplication
         processed_events = set()  # Track processed events to prevent duplicates
-        
+
         for line in lines_to_process:
             try:
+
+                # Check for server info updates
+                if 'MaxPlayerCount:' in line:
+                    match = self.server_info_patterns['max_players'].search(line)
+                    if match:
+                        max_players = int(match.group(1))
+                        extracted_max_players = max_players
+                        logger.info(f"📊 Updated max players for server {server_id}: {max_players}")
+                        # Update database immediately
+                        if hasattr(self.bot, 'db_manager'):
+                            await self.bot.db_manager.servers.update_one(
+                                {"guild_id": int(guild_id), "server_id": server_id},
+                                {"$set": {"max_players": max_players}},
+                                upsert=True
+                            )
 
                 # Mission events - ONLY READY missions of level 3+ with deduplication
                 mission_match = self.patterns['mission_state_change'].search(line)
@@ -990,7 +1011,7 @@ class UnifiedLogParser:
                 # Determine channel type and embed type based on embed content
                 channel_type = 'events'  # Default
                 embed_type = 'general'
-                
+
                 # Check embed title and description for connection events
                 if embed.title:
                     title_lower = embed.title.lower()
@@ -1029,14 +1050,14 @@ class UnifiedLogParser:
                             embed.set_thumbnail(url="attachment://Connections.png")
                             final_embed = embed
                             file_attachment = connections_file
-                            
+
                         elif embed_type == 'mission':
                             # The mission embed already has correct data, just add thumbnail
                             mission_file = discord.File("./assets/Mission.png", filename="Mission.png")
                             embed.set_thumbnail(url="attachment://Mission.png")
                             final_embed = embed
                             file_attachment = mission_file
-                            
+
                         else:
                             # For other embed types, send directly with appropriate thumbnail
                             if embed_type == 'airdrop':
@@ -1051,7 +1072,7 @@ class UnifiedLogParser:
                             else:
                                 asset_file = discord.File("./assets/main.png", filename="main.png")
                                 embed.set_thumbnail(url="attachment://main.png")
-                            
+
                             final_embed = embed
                             file_attachment = asset_file
 

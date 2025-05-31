@@ -105,30 +105,30 @@ class Stats(commands.Cog):
                             logger.warning(f"Invalid server_stats type: {type(server_stats)}")
                             continue
 
-                        # Debug log to track actual data retrieval
-                        logger.debug(f"Processing server stats for {character}: {server_stats}")
+                        # Enhanced logging to track actual data retrieval
+                        logger.debug(f"Processing server stats for {character}: kills={server_stats.get('kills', 0)}, deaths={server_stats.get('deaths', 0)}")
 
-                        kills = server_stats.get('kills', 0)
-                        deaths = server_stats.get('deaths', 0)
-                        suicides = server_stats.get('suicides', 0)
+                        kills = max(0, server_stats.get('kills', 0))
+                        deaths = max(0, server_stats.get('deaths', 0))
+                        suicides = max(0, server_stats.get('suicides', 0))
                         
                         combined_stats['kills'] += kills
                         combined_stats['deaths'] += deaths
                         combined_stats['suicides'] += suicides
                         
                         # Track personal best distance (take the maximum across all servers)
-                        pb_distance = server_stats.get('personal_best_distance', 0.0)
+                        pb_distance = float(server_stats.get('personal_best_distance', 0.0))
                         if pb_distance > combined_stats['personal_best_distance']:
                             combined_stats['personal_best_distance'] = pb_distance
                         
                         combined_stats['servers_played'] += 1
 
                         # Track best streak
-                        best_streak = server_stats.get('best_streak', 0)
+                        best_streak = max(0, server_stats.get('best_streak', 0))
                         if best_streak > combined_stats['best_streak']:
                             combined_stats['best_streak'] = best_streak
 
-                        logger.debug(f"Updated combined stats: kills={combined_stats['kills']}, deaths={combined_stats['deaths']}")
+                        logger.info(f"Character {character}: +{kills} kills, +{deaths} deaths. Total: {combined_stats['kills']} kills, {combined_stats['deaths']} deaths")
 
                 except Exception as char_error:
                     logger.error(f"Error processing character {character}: {char_error}")
@@ -362,7 +362,7 @@ class Stats(commands.Cog):
                 'servers_played': stats.get('servers_played', 0)
             }
 
-            embed, file = await EmbedFactory.build_stats_embed(embed_data)
+            embed, file = await EmbedFactory.build('stats', embed_data)
 
             if file:
                 await ctx.followup.send(embed=embed, file=file)

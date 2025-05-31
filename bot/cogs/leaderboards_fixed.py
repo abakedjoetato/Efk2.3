@@ -424,11 +424,12 @@ class LeaderboardsFixed(commands.Cog):
                 'distance': 'attachment://Leaderboard.png'
             }
 
-            # Ensure we have real data, not empty placeholders
-            if not leaderboard_text:
+            # Validate we have real data with actual content
+            if not leaderboard_text or not any(p.get('kills', 0) > 0 or p.get('deaths', 0) > 0 for p in players):
+                logger.warning(f"No valid leaderboard data found for {stat_type} on {server_name}")
                 return None, None
 
-            # Use EmbedFactory for proper theming with dynamic styling
+            # Use EmbedFactory for proper theming with dynamic styling and validated data
             embed_data = {
                 'title': title,
                 'description': description,
@@ -441,6 +442,7 @@ class LeaderboardsFixed(commands.Cog):
                 'thumbnail_url': thumbnail_map.get(stat_type, 'attachment://Leaderboard.png')
             }
 
+            logger.info(f"Creating {stat_type} leaderboard for {server_name} with {len(players)} players")
             embed, file = await EmbedFactory.build('leaderboard', embed_data)
             return embed, file
 

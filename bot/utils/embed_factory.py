@@ -33,6 +33,79 @@ class EmbedFactory:
         'info': 0x0099FF       # Light blue for info
     }
 
+    # Themed message pools
+    CONNECTION_TITLES = [
+        "Reinforcements Confirmed",
+        "Extraction Protocol Initiated", 
+        "New Operative Deployment",
+        "Squad Member Arrival",
+        "Contact Established"
+    ]
+
+    CONNECTION_DESCRIPTIONS = [
+        "A new combatant has entered the battlefield",
+        "Fresh blood joins the wasteland conflict",
+        "Another survivor steps into the chaos",
+        "The war machine gains another operator",
+        "A warrior emerges from the shadows"
+    ]
+
+    MISSION_READY_TITLES = [
+        "Objective Deployment Confirmed",
+        "Mission Parameters Active", 
+        "Target Zone Established",
+        "Operation Clearance Granted",
+        "Tactical Opportunity Available"
+    ]
+
+    MISSION_READY_DESCRIPTIONS = [
+        "High-value objectives await skilled operatives",
+        "The battlefield offers new challenges to conquer", 
+        "Strategic assets require immediate attention",
+        "Critical missions demand experienced soldiers",
+        "Valuable targets have been identified for extraction"
+    ]
+
+    MISSION_ACTIVE_TITLES = [
+        "Operation In Progress",
+        "Combat Engagement Active",
+        "Tactical Mission Underway", 
+        "Objective Under Assault",
+        "Strike Team Deployed"
+    ]
+
+    MISSION_COMPLETE_TITLES = [
+        "Mission Accomplished",
+        "Objective Secured",
+        "Target Neutralized",
+        "Operation Successful", 
+        "Victory Achieved"
+    ]
+
+    AIRDROP_TITLES = [
+        "Supply Drop Inbound",
+        "High-Value Cargo Incoming",
+        "Emergency Resupply Detected",
+        "Strategic Assets En Route",
+        "Critical Supplies Deployed"
+    ]
+
+    HELICRASH_TITLES = [
+        "Aircraft Down",
+        "Helicopter Wreckage Located", 
+        "Crash Site Identified",
+        "Downed Aircraft Detected",
+        "Emergency Landing Confirmed"
+    ]
+
+    TRADER_TITLES = [
+        "Black Market Operative",
+        "Arms Dealer Sighted",
+        "Supply Contact Available",
+        "Underground Merchant",
+        "Resource Broker Active"
+    ]
+
     # Mission mappings for readable names
     MISSION_MAPPINGS = {
         'GA_Airport_mis_01_SFPSACMission': 'Airport Mission #1',
@@ -116,10 +189,15 @@ class EmbedFactory:
     @staticmethod
     async def build_connection_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build connection embed with themed messaging"""
+        import random
         try:
+            # Use random themed titles and descriptions
+            title = embed_data.get('title', random.choice(EmbedFactory.CONNECTION_TITLES))
+            description = embed_data.get('description', random.choice(EmbedFactory.CONNECTION_DESCRIPTIONS))
+            
             embed = discord.Embed(
-                title=embed_data.get('title', '🔷 Connection Event'),
-                description=embed_data.get('description', 'Player connection status update'),
+                title=title,
+                description=description,
                 color=EmbedFactory.COLORS['connection'],
                 timestamp=datetime.now(timezone.utc)
             )
@@ -128,9 +206,9 @@ class EmbedFactory:
             platform = embed_data.get('platform', 'Unknown')
             server_name = embed_data.get('server_name', 'Unknown Server')
 
-            embed.add_field(name="👤 Player", value=player_name, inline=True)
-            embed.add_field(name="🎮 Platform", value=platform, inline=True)
-            embed.add_field(name="🖥️ Server", value=server_name, inline=True)
+            embed.add_field(name="Operative", value=player_name, inline=True)
+            embed.add_field(name="Platform", value=platform, inline=True)
+            embed.add_field(name="Deployment Zone", value=server_name, inline=True)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 
@@ -147,27 +225,28 @@ class EmbedFactory:
     @staticmethod
     async def build_mission_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build mission embed with difficulty indicators"""
+        import random
         try:
             mission_id = embed_data.get('mission_id', '')
             state = embed_data.get('state', 'UNKNOWN')
             level = embed_data.get('level', 1)
 
-            # Mission state specific titles and colors
+            # Mission state specific titles and colors using themed messaging
             if state == 'READY':
-                title = "🎯 Mission Available"
-                description = "New mission objective is ready for deployment"
+                title = random.choice(EmbedFactory.MISSION_READY_TITLES)
+                description = random.choice(EmbedFactory.MISSION_READY_DESCRIPTIONS)
                 color = EmbedFactory.COLORS['mission']
             elif state == 'IN_PROGRESS':
-                title = "⚔️ Mission Active"
-                description = "Mission objective is currently being completed"
+                title = random.choice(EmbedFactory.MISSION_ACTIVE_TITLES)
+                description = "Elite operatives are currently engaging the target"
                 color = 0xFFAA00  # Orange for active
             elif state == 'COMPLETED':
-                title = "✅ Mission Complete"
-                description = "Mission objective has been successfully completed"
+                title = random.choice(EmbedFactory.MISSION_COMPLETE_TITLES)
+                description = "The operation has been successfully executed"
                 color = EmbedFactory.COLORS['success']
             else:
-                title = "📋 Mission Update"
-                description = "Mission status has changed"
+                title = "Mission Status Update"
+                description = "Tactical situation has evolved"
                 color = EmbedFactory.COLORS['info']
 
             embed = discord.Embed(
@@ -177,14 +256,15 @@ class EmbedFactory:
                 timestamp=datetime.now(timezone.utc)
             )
 
-            # Mission details
+            # Mission details with military styling
             mission_name = EmbedFactory.normalize_mission_name(mission_id)
-            embed.add_field(name="📍 Mission", value=mission_name, inline=False)
+            embed.add_field(name="Target Designation", value=mission_name, inline=False)
 
-            # Difficulty indicator
-            difficulty_stars = "⭐" * level
-            embed.add_field(name="💀 Difficulty", value=f"Level {level} {difficulty_stars}", inline=True)
-            embed.add_field(name="📊 Status", value=state.replace('_', ' ').title(), inline=True)
+            # Difficulty indicator without emojis
+            threat_levels = ["Low", "Medium", "High", "Critical"]
+            threat_level = threat_levels[min(level-1, 3)] if level > 0 else "Unknown"
+            embed.add_field(name="Threat Level", value=f"Class {level} - {threat_level}", inline=True)
+            embed.add_field(name="Operation Status", value=state.replace('_', ' ').title(), inline=True)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 
@@ -201,18 +281,20 @@ class EmbedFactory:
     @staticmethod
     async def build_airdrop_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build airdrop embed"""
+        import random
         try:
+            title = random.choice(EmbedFactory.AIRDROP_TITLES)
             embed = discord.Embed(
-                title="🪂 Airdrop Incoming",
-                description="High-value supply drop detected inbound",
+                title=title,
+                description="Critical military assets are being delivered to the operational zone",
                 color=EmbedFactory.COLORS['airdrop'],
                 timestamp=datetime.now(timezone.utc)
             )
 
             location = embed_data.get('location', 'Unknown Location')
-            embed.add_field(name="📍 Drop Zone", value=location, inline=True)
-            embed.add_field(name="⏰ Status", value="Incoming", inline=True)
-            embed.add_field(name="💰 Contents", value="High-Value Loot", inline=True)
+            embed.add_field(name="Drop Zone", value=location, inline=True)
+            embed.add_field(name="Cargo Status", value="Inbound", inline=True)
+            embed.add_field(name="Asset Classification", value="High-Value Military Supplies", inline=True)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 
@@ -229,18 +311,20 @@ class EmbedFactory:
     @staticmethod
     async def build_helicrash_embed(embed_data: dict) -> tuple[discord.Embed, discord.File]:
         """Build helicrash embed"""
+        import random
         try:
+            title = random.choice(EmbedFactory.HELICRASH_TITLES)
             embed = discord.Embed(
-                title="🚁 Helicopter Crash",
-                description="Military helicopter has crashed - salvage opportunity detected",
+                title=title,
+                description="Military aviation asset has been compromised in hostile territory",
                 color=EmbedFactory.COLORS['helicrash'],
                 timestamp=datetime.now(timezone.utc)
             )
 
             location = embed_data.get('location', 'Unknown Location')
-            embed.add_field(name="💥 Crash Site", value=location, inline=True)
-            embed.add_field(name="⚠️ Status", value="Active", inline=True)
-            embed.add_field(name="🎖️ Loot Type", value="Military Equipment", inline=True)
+            embed.add_field(name="Crash Coordinates", value=location, inline=True)
+            embed.add_field(name="Recovery Status", value="Site Located", inline=True)
+            embed.add_field(name="Asset Classification", value="Military Hardware", inline=True)
 
             embed.set_footer(text="Powered by Discord.gg/EmeraldServers")
 

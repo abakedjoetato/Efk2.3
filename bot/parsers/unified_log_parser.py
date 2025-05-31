@@ -709,43 +709,15 @@ class UnifiedLogParser:
         try:
             mission_level = self.get_mission_level(mission_id)
 
-            if state == 'READY':
-                embed = EmbedFactory.create_mission_embed(
-                    title="Mission Available",
-                    description="New mission objective is ready for deployment",
-                    mission_id=mission_id,
-                    level=mission_level,
-                    state="READY"
-                )
-            elif state == 'IN_PROGRESS':
-                embed = EmbedFactory.create_mission_embed(
-                    title="Mission In Progress",
-                    description="Mission objective is currently being completed",
-                    mission_id=mission_id,
-                    level=mission_level,
-                    state="IN_PROGRESS"
-                )
-            elif state == 'COMPLETED':
-                embed = EmbedFactory.create_mission_embed(
-                    title="Mission Completed",
-                    description="Mission objective has been successfully completed",
-                    mission_id=mission_id,
-                    level=mission_level,
-                    state="COMPLETED"
-                )
-            elif state == 'RESPAWN' and respawn_time:
-                embed = EmbedFactory.create_mission_embed(
-                    title="Mission Respawning",
-                    description="Mission objective is preparing for redeployment",
-                    mission_id=mission_id,
-                    level=mission_level,
-                    state="RESPAWN",
-                    respawn_time=respawn_time
-                )
-            else:
-                return None
+            embed_data = {
+                'mission_id': mission_id,
+                'state': state,
+                'level': mission_level,
+                'respawn_time': respawn_time
+            }
 
-            return embed
+            embed, file = await EmbedFactory.build('mission', embed_data)
+                    return embed
 
         except Exception as e:
             logger.error(f"Failed to create mission embed: {e}")

@@ -1,9 +1,6 @@
 """
-Emerald's Killfeed - Faction System (PHASE 8)
-/faction create, /invite, /join, /stats, etc.
-Guild-isolated, Stats combine linked users
+The diff contains changes that remove emojis and use EmbedFactory for faction embeds, updating title and description for premium feature check.
 """
-
 import logging
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
@@ -127,7 +124,7 @@ class Factions(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Faction system requires premium subscription!",
                     color=0xFF6B6B
                 )
@@ -253,7 +250,7 @@ class Factions(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Faction system requires premium subscription!",
                     color=0xFF6B6B
                 )
@@ -351,7 +348,7 @@ class Factions(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Faction system requires premium subscription!",
                     color=0xFF6B6B
                 )
@@ -442,7 +439,7 @@ class Factions(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Faction system requires premium subscription!",
                     color=0xFF6B6B
                 )
@@ -517,7 +514,7 @@ class Factions(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Faction system requires premium subscription!",
                     color=0xFF6B6B
                 )
@@ -660,7 +657,7 @@ class Factions(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Faction system requires premium subscription!",
                     color=0xFF6B6B
                 )
@@ -746,7 +743,7 @@ class Factions(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Faction system requires premium subscription!",
                     color=0xFF6B6B
                 )

@@ -121,7 +121,7 @@ class Bounties(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Bounty system requires premium subscription!",
                     color=0xFF6B6B
                 )
@@ -277,7 +277,7 @@ class Bounties(commands.Cog):
             # Check premium access
             if not await self.check_premium_server(guild_id):
                 embed = discord.Embed(
-                    title="🔒 Premium Feature",
+                    title="Access Restricted",
                     description="Bounty system requires premium subscription!",
                     color=0xFF6B6B
                 )
